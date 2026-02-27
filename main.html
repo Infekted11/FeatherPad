@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FeatherPad</title>
+    <style>
+        :root {
+            --primary-green: #00a859;
+            --dark-green: #007a41;
+            --light-cream: #fff9f0;
+            --text-white: #ffffff;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --overlay: rgba(0,0,0,0.4);
+            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Theme Definitions */
+        body.theme-blue { --primary-green: #0072bc; --dark-green: #004a80; }
+        body.theme-red { --primary-green: #bc2a00; --dark-green: #801d00; }
+        body.theme-purple { --primary-green: #6a00bc; --dark-green: #480080; }
+        body.theme-orange { --primary-green: #f39c12; --dark-green: #d35400; }
+        body.theme-pink { --primary-green: #e91e63; --dark-green: #c2185b; }
+        body.theme-teal { --primary-green: #009688; --dark-green: #00796b; }
+        body.theme-indigo { --primary-green: #3f51b5; --dark-green: #303f9f; }
+        body.theme-brown { --primary-green: #795548; --dark-green: #5d4037; }
+        body.theme-slate { --primary-green: #607d8b; --dark-green: #455a64; }
+        body.theme-cyan { --primary-green: #00bcd4; --dark-green: #0097a7; }
+        body.theme-lime { --primary-green: #8bc34a; --dark-green: #689f38; }
+        body.theme-amber { --primary-green: #ffc107; --dark-green: #ffa000; }
+        body.theme-deep-purple { --primary-green: #673ab7; --dark-green: #512da8; }
+        body.theme-forest { --primary-green: #2d5a27; --dark-green: #1a3a17; }
+        body.theme-ocean { --primary-green: #1e88e5; --dark-green: #1565c0; }
+        body.theme-sunset { --primary-green: #ff5722; --dark-green: #e64a19; }
+        body.theme-midnight { --primary-green: #2c3e50; --dark-green: #1a252f; }
+        body.theme-lavender { --primary-green: #9b59b6; --dark-green: #8e44ad; }
+        body.theme-mint { --primary-green: #1abc9c; --dark-green: #16a085; }
+        body.theme-rose { --primary-green: #ff4081; --dark-green: #f50057; }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
+
+        /* Themed scrollbars */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-green) var(--light-cream);
+        }
+        *::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        *::-webkit-scrollbar-track {
+            background: var(--light-cream);
+            border-radius: 999px;
+        }
+        *::-webkit-scrollbar-thumb {
+            background: var(--primary-green);
+            border-radius: 999px;
+            border: 2px solid var(--light-cream);
+        }
+        *::-webkit-scrollbar-thumb:hover {
+            background: var(--dark-green);
+        }
+
+        body {
+            background-color: var(--primary-green);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.5s ease;
+        }
+
+        #app-container {
+            width: 95vw;
+            height: 92vh;
+            background-color: var(--light-cream);
+            border: 6px solid var(--primary-green);
+            border-radius: 30px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            transition: border-color 0.5s ease;
+            overflow: hidden;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background-color: var(--primary-green);
+            padding: 5px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 10;
+            transition: background-color 0.5s ease, opacity 0.3s ease;
+        }
+
+        .tab-indicator {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            height: calc(100% - 10px);
+            width: calc(33.33% - 6.66px);
+            background-color: var(--dark-green);
+            border-radius: var(--radius-lg);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.5s ease;
+            z-index: 1;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            color: var(--text-white);
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            user-select: none;
+            z-index: 2;
+            transition: opacity 0.3s;
+        }
+        
+        .view-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .view-pane {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 4px;
+            opacity: 0;
+            transform: scale(0.98);
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .view-pane.active {
+            display: flex;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 15px;
+        }
+
+        .doc-card {
+            background-color: var(--primary-green);
+            color: white;
+            padding: 15px;
+            border-radius: var(--radius-md);
+            height: 140px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: var(--transition);
+        }
+        .doc-card:hover { transform: translateY(-5px); background-color: var(--dark-green); }
+
+        .add-card {
+            border: 3px dashed var(--primary-green);
+            color: var(--primary-green);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            border-radius: var(--radius-md);
+            height: 140px;
+            cursor: pointer;
+        }
+
+        .theme-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 15px;
+        }
+
+        .theme-swatch {
+            width: 120px;
+            height: 120px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            border: 4px solid var(--light-cream);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding-left: 0;
+        }
+
+        .theme-swatch span {
+            color: white;
+            font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            opacity: 1;
+            white-space: nowrap;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-left: 0;
+            transition: opacity 0.2s ease;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+
+        .theme-swatch:hover span {
+            opacity: 1;
+        }
+
+        .theme-swatch.active {
+            border-color: var(--light-cream);
+            transform: scale(1.08);
+        }
+
+        .theme-swatch:hover {
+            transform: scale(1.08);
+        }
+
+        /* Full Screen Editor View */
+        #editor-view {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--light-cream);
+            z-index: 50;
+            display: none;
+            flex-direction: column;
+            padding: 12px;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            min-height: 0;
+        }
+        #editor-view.active { 
+            display: flex; 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+
+        .toolbar {
+            display: flex; gap: 6px; margin-bottom: 8px; padding: 8px;
+            background: rgba(0,0,0,0.06); border-radius: 12px;
+            flex-wrap: wrap; align-items: center;
+        }
+
+        .custom-select {
+            appearance: none; background-color: var(--primary-green); color: white;
+            border: none; padding: 8px 30px 8px 12px; border-radius: 8px;
+            font-size: 0.8rem; font-weight: bold; cursor: pointer; outline: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 8px center;
+            background-size: 16px; transition: var(--transition);
+        }
+
+        .btn {
+            padding: 8px 12px; background: var(--primary-green); color: white;
+            border: none; border-radius: 8px; cursor: pointer;
+            font-weight: bold; font-size: 0.8rem; transition: var(--transition);
+        }
+        .btn.danger { background: #d32f2f; }
+        body.theme-red .btn.danger,
+        body.theme-pink .btn.danger,
+        body.theme-rose .btn.danger,
+        body.theme-sunset .btn.danger {
+            background: #ffce1b;
+            color: #ffffff;
+        }
+        .btn.secondary { background: #666; }
+
+        #save-status {
+            font-size: 0.75rem;
+            color: var(--primary-green);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 8px;
+            min-width: 50px;
+            text-align: right;
+            transition: opacity 0.2s;
+        }
+
+        .editor-shell {
+            flex: 1 1 0;
+            display: flex;
+            gap: 12px;
+            min-height: 0;
+            height: 0;
+        }
+
+        .editor-surface {
+            flex: 1;
+            background: var(--light-cream);
+            border: 2px solid var(--primary-green);
+            border-radius: 12px;
+            padding: 15px;
+            overflow-y: auto;
+            outline: none;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            min-height: 0;
+            height: 100%;
+        }
+
+        #rich-editor-input {
+            display: block;
+            resize: none;
+            width: 100%;
+            border: 2px solid var(--primary-green);
+            font-family: "Courier New", Courier, monospace;
+            color: #1d1d1d;
+            background: #fffef9;
+            overflow-y: auto;
+        }
+
+        #rich-editor-preview {
+            cursor: text;
+            background: #fffdf6;
+        }
+
+
+        #rich-editor-preview h1 { font-size: 1.6rem; margin-bottom: 0.6rem; }
+        #rich-editor-preview h2 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+        #rich-editor-preview p { margin: 0 0 0.75rem 0; }
+        #rich-editor-preview ul, #rich-editor-preview ol { margin: 0 0 0.75rem 1.2rem; }
+        #rich-editor-preview li { margin-bottom: 0.3rem; }
+
+        .footer-logo { 
+            position: absolute; bottom: 12px; right: 20px; 
+            color: var(--primary-green); font-weight: 900; 
+            font-size: 45px; opacity: 0.15; pointer-events: none; 
+        }
+
+        /* Modal Smoother Transitions */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--overlay); 
+            display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
+            backdrop-filter: blur(2px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal {
+            background: var(--light-cream); padding: 24px; border-radius: 25px;
+            width: 320px; text-align: center; border: 5px solid var(--primary-green);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            transform: scale(0.85) translateY(10px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <div class="nav-tabs" id="main-tabs">
+        <div class="tab-indicator" id="indicator"></div>
+        <div class="tab" onclick="jumpToView(0)">Files</div>
+        <div class="tab" onclick="jumpToView(1)">Options</div>
+        <div class="tab" onclick="jumpToView(2)">Credits</div>
+    </div>
+
+    <div class="view-content">
+        <!-- View 0: Files -->
+        <div id="view-0" class="view-pane active">
+            <div class="grid-container" id="file-grid">
+                <div class="add-card" onclick="showCreateModal()">+</div>
+            </div>
+        </div>
+
+        <!-- View 1: Options -->
+        <div id="view-1" class="view-pane">
+            <div style="background: var(--light-cream); padding: 20px; border-radius: 20px; border: 2px solid var(--primary-green); overflow-y: auto;">
+                <label style="color: var(--primary-green); font-weight: 900; display: block; margin-bottom: 5px;">Color Themes</label>
+                <p style="font-size: 0.75rem; color: #666; margin-bottom: 8px;">Hover a theme to preview it. Click to select.</p>
+                
+                <div class="theme-grid" id="theme-selector">
+                    <!-- Themes generated by JS -->
+                </div>
+            </div>
+            <button class="btn danger" style="width:100%; margin-top: 15px; padding: 15px; border-radius: 15px;" onclick="clearAllData()">Reset Application</button>
+        </div>
+
+        <!-- View 2: Credits -->
+        <div id="view-2" class="view-pane">
+            <div style="background: var(--light-cream); padding: 40px; border-radius: 20px; border: 2px solid var(--primary-green); text-align: center;">
+                <h2 style="color: var(--primary-green); font-weight: 900;">FeatherPad</h2>
+                <p style="margin: 15px 0; color: #666; font-size: 0.9rem;">A lightweight markdown editor.</p>
+                <div style="margin-top: 30px; border-top: 2px solid rgba(0,0,0,0.05); padding-top: 20px; font-weight: bold; color: var(--primary-green);">Made by Infekted11</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Screen Editor -->
+    <div id="editor-view">
+        <div class="editor-header" style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+            <div style="flex: 1;">
+                <input type="text" id="file-title" style="width:100%; background: var(--light-cream); border:2px solid var(--primary-green); padding:8px; border-radius:10px; font-weight:bold; outline:none;" oninput="autoSave()">
+            </div>
+            <button class="btn danger" onclick="showDeleteModal()">Delete</button>
+            <button class="btn" onclick="closeEditor()">Back</button>
+        </div>
+        <div class="toolbar editor-interactive">
+            <div style="display:flex; gap:12px; align-items:center; font-weight:800; color:#444;">
+                <span id="word-count">0 words</span>
+                <span id="sentence-count">0 sentences</span>
+                <span id="char-count">0 characters</span>
+            </div>
+            <div style="flex:1"></div>
+            <div id="save-status">Saved</div>
+            <button class="btn" style="background:#555" onclick="downloadFile()">Export</button>
+        </div>
+        <div class="editor-shell">
+            <textarea id="rich-editor-input" class="editor-surface" style="flex:1" oninput="handleLiveInput()" onblur="handleEditorBlur()"></textarea>
+            <div id="rich-editor-preview" class="editor-surface" style="flex:1" tabindex="0"></div>
+        </div>
+    </div>
+
+    <div class="footer-logo">FeatherPad</div>
+</div>
+
+<div id="create-modal" class="modal-overlay">
+    <div class="modal">
+        <h3>New Document</h3>
+        <button class="btn" style="width:100%; margin: 10px 0; padding: 12px;" onclick="createNewFile()">Blank Document</button>
+        <button class="btn secondary" style="width:100%; margin-bottom: 10px; padding: 12px;" onclick="triggerImport()">Import .md File</button>
+        <p id="import-error" style="color:red; font-size:0.75rem; margin-bottom:10px; display:none; font-weight:bold;">Only .md files allowed!</p>
+        <button class="btn" style="background:none; color:#999;" onclick="hideCreateModal()">Cancel</button>
+    </div>
+</div>
+
+<div id="delete-modal" class="modal-overlay">
+    <div class="modal">
+        <h3>Delete File?</h3>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn secondary" style="flex:1" onclick="hideDeleteModal()">Cancel</button>
+            <button class="btn danger" style="flex:1" onclick="deleteCurrentFile()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<input type="file" id="file-import" style="display:none" accept=".md">
+
+<script>
+    let files = JSON.parse(localStorage.getItem('md_editor_files')) || [];
+    let currentFileId = null;
+    let currentTheme = localStorage.getItem('md_editor_theme') || '';
+    let saveTimeout;
+    let isEditing = false;
+    let currentMarkdown = '';
+
+    const themes = [
+        { name: 'Emerald', class: '', color: '#00a859' },
+        { name: 'Ocean', class: 'theme-ocean', color: '#1e88e5' },
+        { name: 'Sunset', class: 'theme-sunset', color: '#ff5722' },
+        { name: 'Midnight', class: 'theme-midnight', color: '#2c3e50' },
+        { name: 'Lavender', class: 'theme-lavender', color: '#9b59b6' },
+        { name: 'Rose', class: 'theme-rose', color: '#ff4081' },
+        { name: 'Mint', class: 'theme-mint', color: '#1abc9c' },
+        { name: 'Cobalt', class: 'theme-blue', color: '#0072bc' },
+        { name: 'Crimson', class: 'theme-red', color: '#bc2a00' },
+        { name: 'Violet', class: 'theme-purple', color: '#6a00bc' },
+        { name: 'Amber', class: 'theme-orange', color: '#f39c12' },
+        { name: 'Flamingo', class: 'theme-pink', color: '#e91e63' },
+        { name: 'Teal', class: 'theme-teal', color: '#009688' },
+        { name: 'Indigo', class: 'theme-indigo', color: '#3f51b5' },
+        { name: 'Cocoa', class: 'theme-brown', color: '#795548' },
+        { name: 'Slate', class: 'theme-slate', color: '#607d8b' },
+        { name: 'Cyan', class: 'theme-cyan', color: '#00bcd4' },
+        { name: 'Lime', class: 'theme-lime', color: '#8bc34a' },
+        { name: 'Sunflower', class: 'theme-amber', color: '#ffc107' },
+        { name: 'Amethyst', class: 'theme-deep-purple', color: '#673ab7' }
+    ];
+    
+    function jumpToView(index) {
+        const indicator = document.getElementById('indicator');
+        indicator.style.transform = `translateX(${index * 100}%)`;
+        document.querySelectorAll('.view-pane').forEach((pane, i) => {
+            pane.classList.toggle('active', i === index);
+        });
+        if(index === 0) renderFiles();
+        if(index === 1) renderThemeSelector();
+    }
+
+    function renderFiles() {
+        const grid = document.getElementById('file-grid');
+        grid.innerHTML = `<div class="add-card" onclick="showCreateModal()">+</div>`;
+        files.forEach(file => {
+            const card = document.createElement('div');
+            card.className = 'doc-card';
+            card.onclick = (e) => openFile(file.id);
+            card.innerHTML = `<div><div class="title">${file.title || 'Untitled'}</div></div>`;
+            grid.prepend(card);
+        });
+    }
+
+    function renderThemeSelector() {
+        const selector = document.getElementById('theme-selector');
+        selector.innerHTML = '';
+        themes.forEach(theme => {
+            const swatch = document.createElement('div');
+            swatch.className = `theme-swatch ${currentTheme === theme.class ? 'active' : ''}`;
+            swatch.style.backgroundColor = theme.color;
+            swatch.innerHTML = `<span>${theme.name}</span>`;
+            swatch.onclick = () => setTheme(theme.class);
+            swatch.onmouseenter = () => previewTheme(theme.class);
+            swatch.onmouseleave = () => previewTheme(null);
+            selector.appendChild(swatch);
+        });
+    }
+
+    function openFile(id) {
+        currentFileId = id;
+        const file = files.find(f => f.id === id);
+        if (!file) return;
+        document.getElementById('file-title').value = file.title;
+        currentMarkdown = file.content || '';
+        const input = document.getElementById('rich-editor-input');
+        input.value = currentMarkdown;
+        renderPreview();
+        isEditing = false;
+        const editor = document.getElementById('editor-view');
+        editor.style.display = 'flex';
+        setTimeout(() => editor.classList.add('active'), 10);
+        document.getElementById('save-status').innerText = "Saved";
+    }
+
+    function closeEditor() {
+        document.getElementById('editor-view').classList.remove('active');
+        setTimeout(() => document.getElementById('editor-view').style.display = 'none', 500);
+        currentFileId = null;
+        isEditing = false;
+        renderFiles();
+    }
+
+    function autoSave() {
+        document.getElementById('save-status').innerText = "...";
+        document.getElementById('save-status').style.opacity = "0.5";
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            const file = files.find(f => f.id === currentFileId);
+            if(file) {
+                file.title = document.getElementById('file-title').value;
+                if (isEditing) {
+                    currentMarkdown = document.getElementById('rich-editor-input').value;
+                }
+                file.content = currentMarkdown;
+                saveData();
+                document.getElementById('save-status').innerText = "Saved";
+                document.getElementById('save-status').style.opacity = "1";
+            }
+        }, 800);
+        updateCounts();
+    }
+
+    function saveData() { localStorage.setItem('md_editor_files', JSON.stringify(files)); }
+
+    function downloadFile() {
+        const file = files.find(f => f.id === currentFileId);
+        if (!file) return;
+        const markdown = isEditing ? document.getElementById('rich-editor-input').value : currentMarkdown;
+        const blob = new Blob([markdown], {type: 'text/markdown'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${file.title}.md`;
+        a.click();
+    }
+
+    function triggerImport() { 
+        document.getElementById('import-error').style.display = 'none';
+        document.getElementById('file-import').click(); 
+    }
+
+    document.getElementById('file-import').onchange = (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        if(!file.name.toLowerCase().endsWith('.md')) {
+            document.getElementById('import-error').style.display = 'block';
+            e.target.value = '';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const id = Date.now().toString();
+            files.push({ id, title: file.name.replace('.md',''), content: ev.target.result });
+            saveData();
+            hideCreateModal();
+            renderFiles();
+            openFile(id);
+            e.target.value = '';
+        };
+        reader.readAsText(file);
+    };
+
+    function showCreateModal() { 
+        document.getElementById('import-error').style.display = 'none';
+        document.getElementById('create-modal').classList.add('active'); 
+    }
+    function hideCreateModal() { document.getElementById('create-modal').classList.remove('active'); }
+    function showDeleteModal() { document.getElementById('delete-modal').classList.add('active'); }
+    function hideDeleteModal() { document.getElementById('delete-modal').classList.remove('active'); }
+
+    function createNewFile() {
+        const id = Date.now().toString();
+        files.push({ id, title: 'Untitled Document', content: '' });
+        saveData(); hideCreateModal(); openFile(id);
+    }
+
+    function deleteCurrentFile() {
+        files = files.filter(f => f.id !== currentFileId);
+        saveData(); hideDeleteModal(); closeEditor();
+    }
+
+    function handleEditorBlur() {
+        setTimeout(() => {
+            const active = document.activeElement;
+            if (active && active.closest && (active.closest('.editor-shell') || active.closest('.editor-interactive'))) {
+                return;
+            }
+            isEditing = false;
+        }, 0);
+    }
+
+    function renderPreview() {
+        const preview = document.getElementById('rich-editor-preview');
+        preview.innerHTML = renderMarkdown(currentMarkdown || '');
+        updateCounts();
+    }
+
+    function renderMarkdown(md) {
+        const escapeHtml = (str) =>
+            str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const inlineFormat = (str) => {
+            let out = str.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+            out = out.replace(/\*(.+?)\*/g, "<em>$1</em>");
+            return out;
+        };
+        const lines = md.split(/\r?\n/);
+        let html = "";
+        let inUl = false;
+        let inOl = false;
+
+        const closeLists = () => {
+            if (inUl) { html += "</ul>"; inUl = false; }
+            if (inOl) { html += "</ol>"; inOl = false; }
+        };
+
+        lines.forEach(line => {
+            const trimmed = line.trim();
+            if (trimmed === "") {
+                closeLists();
+                return;
+            }
+            const hMatch = line.match(/^(#{1,3})\s+(.*)$/);
+            if (hMatch) {
+                closeLists();
+                const level = hMatch[1].length;
+                html += `<h${level}>${inlineFormat(escapeHtml(hMatch[2]))}</h${level}>`;
+                return;
+            }
+            const ulMatch = line.match(/^\s*[-*]\s+(.*)$/);
+            if (ulMatch) {
+                if (!inUl) { closeLists(); html += "<ul>"; inUl = true; }
+                html += `<li>${inlineFormat(escapeHtml(ulMatch[1]))}</li>`;
+                return;
+            }
+            const olMatch = line.match(/^\s*\d+\.\s+(.*)$/);
+            if (olMatch) {
+                if (!inOl) { closeLists(); html += "<ol>"; inOl = true; }
+                html += `<li>${inlineFormat(escapeHtml(olMatch[1]))}</li>`;
+                return;
+            }
+            closeLists();
+            html += `<p>${inlineFormat(escapeHtml(line))}</p>`;
+        });
+
+        closeLists();
+        return html || "<p style='color:#888;'>Click to start writing...</p>";
+    }
+
+    function updateCounts() {
+        const text = (currentMarkdown || '')
+            .replace(/\r?\n/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        const words = text ? text.split(' ').length : 0;
+        const sentences = text ? (text.match(/[^.!?]+[.!?]+/g) || []).length || (text ? 1 : 0) : 0;
+        const chars = (currentMarkdown || '').length;
+        document.getElementById('word-count').innerText = `${words} ${words === 1 ? 'word' : 'words'}`;
+        document.getElementById('sentence-count').innerText = `${sentences} ${sentences === 1 ? 'sentence' : 'sentences'}`;
+        document.getElementById('char-count').innerText = `${chars} ${chars === 1 ? 'character' : 'characters'}`;
+    }
+
+    function insertAroundSelection(prefix, suffix = prefix) {
+        const input = document.getElementById('rich-editor-input');
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const value = input.value;
+        input.value = value.slice(0, start) + prefix + value.slice(start, end) + suffix + value.slice(end);
+        input.selectionStart = start + prefix.length;
+        input.selectionEnd = end + prefix.length;
+        handleLiveInput();
+    }
+
+    function insertLinePrefix(prefix) {
+        const input = document.getElementById('rich-editor-input');
+        const pos = input.selectionStart;
+        const value = input.value;
+        const lineStart = value.lastIndexOf("\n", pos - 1) + 1;
+        input.value = value.slice(0, lineStart) + prefix + value.slice(lineStart);
+        input.selectionStart = pos + prefix.length;
+        input.selectionEnd = pos + prefix.length;
+        handleLiveInput();
+    }
+
+    function applyBlockStyle(type) {
+        if (!type) return;
+        const map = { P: "", H1: "# ", H2: "## " };
+        if (map[type] !== undefined) {
+            insertLinePrefix(map[type]);
+        }
+    }
+
+    function handleLiveInput() {
+        isEditing = true;
+        currentMarkdown = document.getElementById('rich-editor-input').value;
+        renderPreview();
+        autoSave();
+    }
+
+    function setTheme(t) {
+        document.body.className = t;
+        currentTheme = t;
+        localStorage.setItem('md_editor_theme', t);
+        renderThemeSelector();
+    }
+
+    function previewTheme(t) {
+        if (t === null) {
+            document.body.className = currentTheme;
+            return;
+        }
+        document.body.className = t;
+    }
+
+    function clearAllData() {
+        if(confirm("Wipe everything? This will delete all your notes.")) { localStorage.clear(); location.reload(); }
+    }
+
+    function ensureDefaultDocument() {
+        if (files.length > 0) return;
+        const id = Date.now().toString();
+        const content = [
+            "# Welcome to FeatherPad",
+            "",
+            "This starter note highlights the main features so you can jump right in.",
+            "",
+            "## Core Features",
+            "- Live Markdown preview next to the editor.",
+            "- Raw Markdown tags stay visible while you type.",
+            "- Word, sentence, and character counters update in real time.",
+            "- Editor and preview stay side-by-side and are independently scrollable.",
+            "- Autosave keeps your work safe.",
+            "- Export to `.md` anytime.",
+            "- Import existing `.md` files from your device.",
+            "- Color themes in the Options tab.",
+            "",
+            "## Quick Markdown Examples",
+            "- **Bold** uses `**bold**`",
+            "- *Italic* uses `*italic*`",
+            "- Lists use `- item` or `1. item`",
+            "- Headings use `#`, `##`, `###`",
+            "",
+            "Start editing this document or create a new one from the Files tab."
+        ].join("\n");
+        files.push({ id, title: "Getting Started", content });
+        saveData();
+    }
+
+    ensureDefaultDocument();
+    setTheme(currentTheme);
+    renderFiles();
+    updateCounts();
+</script>
+</body>
+</html>
