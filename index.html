@@ -332,6 +332,19 @@
             background: #fffdf6;
         }
 
+        .editor-resizer {
+            width: 10px;
+            cursor: col-resize;
+            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent);
+            border-radius: 999px;
+            align-self: stretch;
+            flex: 0 0 10px;
+        }
+
+        .editor-resizer:active {
+            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.16), transparent);
+        }
+
 
         #rich-editor-preview h1 { font-size: 1.6rem; margin-bottom: 0.6rem; }
         #rich-editor-preview h2 { font-size: 1.3rem; margin-bottom: 0.5rem; }
@@ -434,6 +447,7 @@
         </div>
         <div class="editor-shell">
             <textarea id="rich-editor-input" class="editor-surface" style="flex:1" oninput="handleLiveInput()" onblur="handleEditorBlur()"></textarea>
+            <div id="editor-resizer" class="editor-resizer" title="Drag to resize"></div>
             <div id="rich-editor-preview" class="editor-surface" style="flex:1" tabindex="0"></div>
         </div>
     </div>
@@ -769,6 +783,48 @@
         if(confirm("Wipe everything? This will delete all your notes.")) { localStorage.clear(); location.reload(); }
     }
 
+    function initEditorResizer() {
+        const resizer = document.getElementById('editor-resizer');
+        const input = document.getElementById('rich-editor-input');
+        const preview = document.getElementById('rich-editor-preview');
+        if (!resizer || !input || !preview) return;
+
+        const savedRatio = parseFloat(localStorage.getItem('editor_split_ratio'));
+        if (!Number.isNaN(savedRatio) && savedRatio > 0.25 && savedRatio < 0.75) {
+            input.style.flex = `0 0 ${savedRatio * 100}%`;
+            preview.style.flex = `1 1 ${(1 - savedRatio) * 100}%`;
+        }
+
+        let isDragging = false;
+        const onMove = (e) => {
+            if (!isDragging) return;
+            const shell = resizer.parentElement;
+            const rect = shell.getBoundingClientRect();
+            const x = Math.min(Math.max(e.clientX - rect.left, rect.width * 0.25), rect.width * 0.75);
+            const ratio = x / rect.width;
+            input.style.flex = `0 0 ${ratio * 100}%`;
+            preview.style.flex = `1 1 ${(1 - ratio) * 100}%`;
+            localStorage.setItem('editor_split_ratio', ratio.toFixed(3));
+        };
+        const stopDrag = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', stopDrag);
+        };
+
+        resizer.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            isDragging = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', stopDrag);
+        });
+    }
+
     function ensureDefaultDocument() {
         if (files.length > 0) return;
         const id = Date.now().toString();
@@ -781,7 +837,8 @@
             "- Live Markdown preview next to the editor.",
             "- Raw Markdown tags stay visible while you type.",
             "- Word, sentence, and character counters update in real time.",
-            "- Editor and preview stay side-by-side and are independently scrollable.",
+            "- Drag the center divider to resize editor and preview.",
+            "- Editor and preview are independently scrollable.",
             "- Autosave keeps your work safe.",
             "- Export to `.md` anytime.",
             "- Import existing `.md` files from your device.",
@@ -803,6 +860,7 @@
     setTheme(currentTheme);
     renderFiles();
     updateCounts();
+    initEditorResizer();
 </script>
 </body>
 </html>
