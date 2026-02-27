@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FeatherPad</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
             --primary-green: #00a859;
@@ -166,8 +167,131 @@
             flex-direction: column;
             justify-content: space-between;
             transition: var(--transition);
+            position: relative;
         }
         .doc-card:hover { transform: translateY(-5px); background-color: var(--dark-green); }
+
+        .fav-toggle {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.8);
+            background: transparent;
+            color: rgba(255,255,255,0.9);
+            font-weight: 900;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            font-size: 18px;
+        }
+        .fav-toggle.active {
+            background: #ffd54f;
+            color: #4a3a00;
+            border-color: #ffd54f;
+        }
+        body.theme-sunset .fav-toggle.active,
+        body.theme-amber .fav-toggle.active {
+            background: #1e88e5;
+            border-color: #1e88e5;
+            color: #ffffff;
+        }
+        .fav-toggle:hover { transform: scale(1.08); }
+
+        .delete-toggle {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.8);
+            background: transparent;
+            color: rgba(255,255,255,0.9);
+            font-weight: 900;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+        .delete-toggle:hover { transform: scale(1.08); background: rgba(255,255,255,0.15); }
+
+        .doc-tags {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
+
+        .doc-card.selected {
+            transform: scale(1.06);
+            z-index: 2;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .tag-filter-wrap {
+            position: relative;
+        }
+
+        .tag-popup {
+            position: absolute;
+            top: 46px;
+            right: 0;
+            width: 240px;
+            background: var(--light-cream);
+            border: 2px solid var(--primary-green);
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 20;
+        }
+
+        .tag-popup.active { display: block; }
+
+        .tag-option {
+            padding: 6px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            color: #444;
+        }
+        .tag-option:hover { background: rgba(0,0,0,0.06); }
+        .tag-option.active { background: var(--primary-green); color: #fff; }
+
+        .search-star {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 2px solid var(--primary-green);
+            background: var(--light-cream);
+            color: var(--primary-green);
+            font-weight: 900;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+            font-size: 20px;
+        }
+
+        .material-icons {
+            font-size: inherit;
+            line-height: 1;
+        }
+
+        .search-star.active {
+            background: var(--primary-green);
+            color: var(--text-white);
+        }
 
         .add-card {
             border: 3px dashed var(--primary-green);
@@ -398,6 +522,23 @@
     <div class="view-content">
         <!-- View 0: Files -->
         <div id="view-0" class="view-pane active">
+            <div class="search-row">
+                <input type="text" id="file-search" placeholder="Search by title or content..." style="flex:1; background: var(--light-cream); border:2px solid var(--primary-green); padding:10px; border-radius:12px; font-weight:600; outline:none;" oninput="renderFiles()">
+                <div class="tag-filter-wrap">
+                    <button id="tag-filter-btn" class="search-star" onclick="toggleTagPopup()" title="Filter by tag">#</button>
+                    <div id="tag-popup" class="tag-popup">
+                        <input type="text" id="tag-search" placeholder="Search tags..." style="width:100%; background: var(--light-cream); border:2px solid var(--primary-green); padding:6px; border-radius:10px; font-weight:600; outline:none; margin-bottom:8px;" oninput="renderTagOptions()">
+                        <div id="tag-options"></div>
+                    </div>
+                </div>
+                <button id="favorites-only" class="search-star" onclick="toggleFavoritesFilter()" title="Show favorites only"><span class="material-icons">star</span></button>
+                <button id="selection-mode-toggle" class="search-star" onclick="toggleSelectionMode()" title="Selection mode"><span class="material-icons">check</span></button>
+            </div>
+            <div id="bulk-actions" style="display:none; margin-bottom:10px; gap:8px;" class="toolbar">
+                <button class="btn" onclick="bulkToggleFavorite()">Toggle Favorite</button>
+                <button class="btn danger" onclick="bulkDelete()">Delete</button>
+                <button class="btn" style="background:#555" onclick="bulkDownload()">Download</button>
+            </div>
             <div class="grid-container" id="file-grid">
                 <div class="add-card" onclick="showCreateModal()">+</div>
             </div>
@@ -432,7 +573,10 @@
             <div style="flex: 1;">
                 <input type="text" id="file-title" style="width:100%; background: var(--light-cream); border:2px solid var(--primary-green); padding:8px; border-radius:10px; font-weight:bold; outline:none;" oninput="autoSave()">
             </div>
-            <button class="btn danger" onclick="showDeleteModal()">Delete</button>
+            <div style="flex: 1;">
+                <input type="text" id="file-tags" placeholder="Tags (comma separated)" style="width:100%; background: var(--light-cream); border:2px solid var(--primary-green); padding:8px; border-radius:10px; font-weight:bold; outline:none;" oninput="autoSave()">
+            </div>
+            <button class="btn danger" onclick="showDeleteModalFor([currentFileId])">Delete</button>
             <button class="btn" onclick="closeEditor()">Back</button>
         </div>
         <div class="toolbar editor-interactive">
@@ -470,13 +614,15 @@
         <h3>Delete File?</h3>
         <div style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn secondary" style="flex:1" onclick="hideDeleteModal()">Cancel</button>
-            <button class="btn danger" style="flex:1" onclick="deleteCurrentFile()">Delete</button>
+            <button class="btn danger" style="flex:1" onclick="confirmDeleteTargets()">Delete</button>
         </div>
     </div>
 </div>
 
 <input type="file" id="file-import" style="display:none" accept=".md">
 
+<script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markdown-it-task-lists@2.1.1/dist/markdown-it-task-lists.min.js"></script>
 <script>
     let files = JSON.parse(localStorage.getItem('md_editor_files')) || [];
     let currentFileId = null;
@@ -484,6 +630,9 @@
     let saveTimeout;
     let isEditing = false;
     let currentMarkdown = '';
+    let selectionMode = false;
+    let selectedIds = new Set();
+    let deleteTargets = [];
 
     const themes = [
         { name: 'Emerald', class: '', color: '#00a859' },
@@ -520,14 +669,72 @@
 
     function renderFiles() {
         const grid = document.getElementById('file-grid');
-        grid.innerHTML = `<div class="add-card" onclick="showCreateModal()">+</div>`;
-        files.forEach(file => {
+        const query = (document.getElementById('file-search')?.value || '').trim().toLowerCase();
+        const favoritesOnly = document.getElementById('favorites-only')?.classList.contains('active');
+        const tagFilter = (document.getElementById('tag-filter-btn')?.dataset.tag || '').toLowerCase();
+        grid.innerHTML = '';
+        const sorted = [...files].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+        sorted.forEach(file => {
+            if (favoritesOnly && !file.favorite) {
+                return;
+            }
+            if (tagFilter) {
+                const tags = (file.tags || []).map(t => t.toLowerCase());
+                if (!tags.includes(tagFilter)) return;
+            }
+            if (query) {
+                const hayTitle = (file.title || '').toLowerCase();
+                const hayContent = plainTextFromMarkdown(file.content || '').toLowerCase();
+                if (!fuzzyMatch(hayTitle, query) && !fuzzyMatch(hayContent, query)) {
+                    return;
+                }
+            }
             const card = document.createElement('div');
-            card.className = 'doc-card';
-            card.onclick = (e) => openFile(file.id);
-            card.innerHTML = `<div><div class="title">${file.title || 'Untitled'}</div></div>`;
-            grid.prepend(card);
+            card.className = `doc-card ${selectedIds.has(file.id) ? 'selected' : ''}`;
+            card.onclick = (e) => {
+                if (selectionMode) {
+                    toggleSelection(file.id);
+                    return;
+                }
+                openFile(file.id);
+            };
+            const tagsText = (file.tags || []).join(', ');
+            card.innerHTML = `<div><div class="title">${file.title || 'Untitled'}</div>${tagsText ? `<div class="doc-tags">${tagsText}</div>` : ''}</div>`;
+
+            const favBtn = document.createElement('button');
+            favBtn.className = `fav-toggle ${file.favorite ? 'active' : ''}`;
+            favBtn.title = file.favorite ? 'Unfavorite' : 'Favorite';
+            favBtn.innerHTML = `<span class="material-icons">${file.favorite ? 'star' : 'star_border'}</span>`;
+            favBtn.onclick = (e) => {
+                e.stopPropagation();
+                file.favorite = !file.favorite;
+                file.updatedAt = Date.now();
+                saveData();
+                renderFiles();
+            };
+            card.appendChild(favBtn);
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-toggle';
+            delBtn.title = 'Delete';
+            delBtn.textContent = '×';
+            delBtn.onclick = (e) => {
+                e.stopPropagation();
+                showDeleteModalFor([file.id]);
+            };
+            card.appendChild(delBtn);
+            grid.appendChild(card);
         });
+        const addCard = document.createElement('div');
+        addCard.className = 'add-card';
+        addCard.onclick = () => showCreateModal();
+        addCard.textContent = '+';
+        grid.appendChild(addCard);
+        renderTagOptions();
+        const favFilterBtn = document.getElementById('favorites-only');
+        if (favFilterBtn) {
+            favFilterBtn.innerHTML = `<span class="material-icons">${favFilterBtn.classList.contains('active') ? 'star' : 'star_border'}</span>`;
+        }
     }
 
     function renderThemeSelector() {
@@ -550,6 +757,7 @@
         const file = files.find(f => f.id === id);
         if (!file) return;
         document.getElementById('file-title').value = file.title;
+        document.getElementById('file-tags').value = (file.tags || []).join(', ');
         currentMarkdown = file.content || '';
         const input = document.getElementById('rich-editor-input');
         input.value = currentMarkdown;
@@ -581,6 +789,8 @@
                     currentMarkdown = document.getElementById('rich-editor-input').value;
                 }
                 file.content = currentMarkdown;
+                file.tags = parseTags(document.getElementById('file-tags').value);
+                file.updatedAt = Date.now();
                 saveData();
                 document.getElementById('save-status').innerText = "Saved";
                 document.getElementById('save-status').style.opacity = "1";
@@ -618,7 +828,7 @@
         const reader = new FileReader();
         reader.onload = (ev) => {
             const id = Date.now().toString();
-            files.push({ id, title: file.name.replace('.md',''), content: ev.target.result });
+            files.push({ id, title: file.name.replace('.md',''), content: ev.target.result, tags: [], updatedAt: Date.now() });
             saveData();
             hideCreateModal();
             renderFiles();
@@ -638,13 +848,27 @@
 
     function createNewFile() {
         const id = Date.now().toString();
-        files.push({ id, title: 'Untitled Document', content: '' });
+        files.push({ id, title: 'Untitled Document', content: '', tags: [], updatedAt: Date.now() });
         saveData(); hideCreateModal(); openFile(id);
     }
 
     function deleteCurrentFile() {
         files = files.filter(f => f.id !== currentFileId);
         saveData(); hideDeleteModal(); closeEditor();
+    }
+
+    function confirmDeleteTargets() {
+        if (!deleteTargets || deleteTargets.length === 0) return;
+        if (deleteTargets.length === 1 && deleteTargets[0] === currentFileId) {
+            deleteCurrentFile();
+            deleteTargets = [];
+            return;
+        }
+        files = files.filter(f => !deleteTargets.includes(f.id));
+        saveData(); hideDeleteModal();
+        if (deleteTargets.includes(currentFileId)) closeEditor();
+        deleteTargets = [];
+        renderFiles();
     }
 
     function handleEditorBlur() {
@@ -663,55 +887,17 @@
         updateCounts();
     }
 
+    const mdParser = window.markdownit
+        ? window.markdownit({ html: false, linkify: true, breaks: true, typographer: true })
+              .use(window.markdownitTaskLists, { enabled: true, label: true })
+        : null;
+
     function renderMarkdown(md) {
-        const escapeHtml = (str) =>
-            str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        const inlineFormat = (str) => {
-            let out = str.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-            out = out.replace(/\*(.+?)\*/g, "<em>$1</em>");
-            return out;
-        };
-        const lines = md.split(/\r?\n/);
-        let html = "";
-        let inUl = false;
-        let inOl = false;
-
-        const closeLists = () => {
-            if (inUl) { html += "</ul>"; inUl = false; }
-            if (inOl) { html += "</ol>"; inOl = false; }
-        };
-
-        lines.forEach(line => {
-            const trimmed = line.trim();
-            if (trimmed === "") {
-                closeLists();
-                return;
-            }
-            const hMatch = line.match(/^(#{1,3})\s+(.*)$/);
-            if (hMatch) {
-                closeLists();
-                const level = hMatch[1].length;
-                html += `<h${level}>${inlineFormat(escapeHtml(hMatch[2]))}</h${level}>`;
-                return;
-            }
-            const ulMatch = line.match(/^\s*[-*]\s+(.*)$/);
-            if (ulMatch) {
-                if (!inUl) { closeLists(); html += "<ul>"; inUl = true; }
-                html += `<li>${inlineFormat(escapeHtml(ulMatch[1]))}</li>`;
-                return;
-            }
-            const olMatch = line.match(/^\s*\d+\.\s+(.*)$/);
-            if (olMatch) {
-                if (!inOl) { closeLists(); html += "<ol>"; inOl = true; }
-                html += `<li>${inlineFormat(escapeHtml(olMatch[1]))}</li>`;
-                return;
-            }
-            closeLists();
-            html += `<p>${inlineFormat(escapeHtml(line))}</p>`;
-        });
-
-        closeLists();
-        return html || "<p style='color:#888;'>Click to start writing...</p>";
+        if (mdParser) {
+            const rendered = mdParser.render(md || '');
+            return rendered || "<p style='color:#888;'>Click to start writing...</p>";
+        }
+        return "<p style='color:#888;'>Markdown parser failed to load.</p>";
     }
 
     function updateCounts() {
@@ -725,6 +911,143 @@
         document.getElementById('word-count').innerText = `${words} ${words === 1 ? 'word' : 'words'}`;
         document.getElementById('sentence-count').innerText = `${sentences} ${sentences === 1 ? 'sentence' : 'sentences'}`;
         document.getElementById('char-count').innerText = `${chars} ${chars === 1 ? 'character' : 'characters'}`;
+    }
+
+    function toggleFavoritesFilter() {
+        const btn = document.getElementById('favorites-only');
+        if (!btn) return;
+        btn.classList.toggle('active');
+        btn.innerHTML = `<span class="material-icons">${btn.classList.contains('active') ? 'star' : 'star_border'}</span>`;
+        renderFiles();
+    }
+
+    function toggleSelectionMode() {
+        selectionMode = !selectionMode;
+        const btn = document.getElementById('selection-mode-toggle');
+        if (btn) btn.classList.toggle('active', selectionMode);
+        if (!selectionMode) selectedIds.clear();
+        const bulk = document.getElementById('bulk-actions');
+        if (bulk) bulk.style.display = selectionMode ? 'flex' : 'none';
+        renderFiles();
+    }
+
+    function toggleSelection(id) {
+        if (selectedIds.has(id)) selectedIds.delete(id);
+        else selectedIds.add(id);
+        renderFiles();
+    }
+
+    function bulkToggleFavorite() {
+        if (selectedIds.size === 0) return;
+        const allFav = [...selectedIds].every(id => (files.find(f => f.id === id)?.favorite));
+        files.forEach(f => {
+            if (selectedIds.has(f.id)) {
+                f.favorite = !allFav;
+                f.updatedAt = Date.now();
+            }
+        });
+        saveData();
+        renderFiles();
+    }
+
+    function bulkDelete() {
+        if (selectedIds.size === 0) return;
+        showDeleteModalFor([...selectedIds]);
+    }
+
+    function bulkDownload() {
+        if (selectedIds.size === 0) return;
+        const selected = files.filter(f => selectedIds.has(f.id));
+        selected.forEach(file => {
+            const blob = new Blob([file.content || ''], {type: 'text/markdown'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${file.title || 'Untitled'}.md`;
+            a.click();
+        });
+    }
+
+    function showDeleteModalFor(ids) {
+        deleteTargets = ids;
+        document.getElementById('delete-modal').classList.add('active');
+    }
+
+    function parseTags(raw) {
+        return (raw || '')
+            .split(',')
+            .map(t => t.trim())
+            .filter(Boolean);
+    }
+
+    function toggleTagPopup() {
+        const popup = document.getElementById('tag-popup');
+        if (!popup) return;
+        popup.classList.toggle('active');
+        if (popup.classList.contains('active')) {
+            renderTagOptions();
+            document.getElementById('tag-search')?.focus();
+        }
+    }
+
+    function renderTagOptions() {
+        const wrap = document.getElementById('tag-options');
+        const search = (document.getElementById('tag-search')?.value || '').trim().toLowerCase();
+        if (!wrap) return;
+        const tags = new Set();
+        files.forEach(f => (f.tags || []).forEach(t => tags.add(t)));
+        const all = [...tags].sort((a, b) => a.localeCompare(b));
+        const filtered = all.filter(t => !search || fuzzyMatch(t.toLowerCase(), search));
+        wrap.innerHTML = '';
+
+        const allOpt = document.createElement('div');
+        allOpt.className = `tag-option ${!document.getElementById('tag-filter-btn')?.dataset.tag ? 'active' : ''}`;
+        allOpt.textContent = 'All Tags';
+        allOpt.onclick = () => setTagFilter('');
+        wrap.appendChild(allOpt);
+
+        filtered.forEach(tag => {
+            const opt = document.createElement('div');
+            opt.className = `tag-option ${document.getElementById('tag-filter-btn')?.dataset.tag === tag ? 'active' : ''}`;
+            opt.textContent = tag;
+            opt.onclick = () => setTagFilter(tag);
+            wrap.appendChild(opt);
+        });
+    }
+
+    function setTagFilter(tag) {
+        const btn = document.getElementById('tag-filter-btn');
+        if (!btn) return;
+        if (tag) {
+            btn.dataset.tag = tag;
+            btn.classList.add('active');
+        } else {
+            delete btn.dataset.tag;
+            btn.classList.remove('active');
+        }
+        renderFiles();
+    }
+
+    function fuzzyMatch(text, query) {
+        if (!query) return true;
+        let ti = 0;
+        let qi = 0;
+        while (ti < text.length && qi < query.length) {
+            if (text[ti] === query[qi]) qi++;
+            ti++;
+        }
+        return qi === query.length;
+    }
+
+    function plainTextFromMarkdown(md) {
+        return (md || '')
+            .replace(/```[\s\S]*?```/g, ' ')
+            .replace(/`[^`]*`/g, ' ')
+            .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ')
+            .replace(/\[[^\]]*\]\([^)]+\)/g, ' ')
+            .replace(/[*_~>#=-]{1,}/g, ' ')
+            .replace(/\|/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
     }
 
     function insertAroundSelection(prefix, suffix = prefix) {
@@ -839,6 +1162,8 @@
             "- Word, sentence, and character counters update in real time.",
             "- Drag the center divider to resize editor and preview.",
             "- Editor and preview are independently scrollable.",
+            "- Add tags to organize notes and filter by tag.",
+            "- Selection mode for bulk favorite, delete, and download.",
             "- Autosave keeps your work safe.",
             "- Export to `.md` anytime.",
             "- Import existing `.md` files from your device.",
@@ -852,7 +1177,7 @@
             "",
             "Start editing this document or create a new one from the Files tab."
         ].join("\n");
-        files.push({ id, title: "Getting Started", content });
+        files.push({ id, title: "Getting Started", content, tags: ["welcome", "features"], updatedAt: Date.now() });
         saveData();
     }
 
