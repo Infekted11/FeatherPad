@@ -527,7 +527,7 @@
             resize: none;
             width: 100%;
             border: 2px solid var(--primary-green);
-            font-family: "Georgia", "Times New Roman", serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             color: #1d1d1d;
             background: #fffef9;
             overflow-y: auto;
@@ -543,6 +543,36 @@
         #rich-editor-input p { margin: 0 0 0.75rem 0; }
         #rich-editor-input ul, #rich-editor-input ol { margin: 0 0 0.75rem 1.2rem; }
         #rich-editor-input li { margin-bottom: 0.3rem; }
+        #rich-editor-input a {
+            color: #444;
+            text-decoration: none;
+            background: #e2e2e2;
+            border: 1px solid rgba(0,0,0,0.15);
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-weight: 800;
+            display: inline-block;
+        }
+        #rich-editor-input a:hover {
+            background: #d8d8d8;
+        }
+        #link-popover {
+            position: fixed;
+            z-index: 1200;
+            background: #ffffff;
+            border: 2px solid var(--primary-green);
+            border-radius: 12px;
+            box-shadow: var(--shadow-soft);
+            padding: 8px;
+            display: none;
+            gap: 6px;
+            align-items: center;
+            font-weight: 800;
+            color: #444;
+        }
+        #link-popover.active {
+            display: flex;
+        }
 
         .tool-btn {
             border: 2px solid var(--primary-green);
@@ -732,14 +762,13 @@
             <button class="tool-btn" data-cmd="underline" title="Underline"><span class="material-icons">format_underlined</span></button>
             <button class="tool-btn" data-cmd="strikeThrough" title="Strikethrough"><span class="material-icons">strikethrough_s</span></button>
             <span class="toolbar-divider"></span>
+            <button class="tool-btn" data-block="p" title="Paragraph">P</button>
             <button class="tool-btn" data-block="h1" title="Heading 1">H1</button>
             <button class="tool-btn" data-block="h2" title="Heading 2">H2</button>
             <button class="tool-btn" data-block="h3" title="Heading 3">H3</button>
             <span class="toolbar-divider"></span>
             <button class="tool-btn" data-cmd="insertUnorderedList" title="Bulleted List"><span class="material-icons">format_list_bulleted</span></button>
             <button class="tool-btn" data-cmd="insertOrderedList" title="Numbered List"><span class="material-icons">format_list_numbered</span></button>
-            <button class="tool-btn" data-block="blockquote" title="Quote"><span class="material-icons">format_quote</span></button>
-            <button class="tool-btn" data-action="code" title="Inline Code"><span class="material-icons">code</span></button>
             <button class="tool-btn" data-action="link" title="Insert Link"><span class="material-icons">link</span></button>
             <span class="toolbar-divider"></span>
             <button class="tool-btn" data-cmd="undo" title="Undo"><span class="material-icons">undo</span></button>
@@ -771,7 +800,7 @@
         <h3>New Document</h3>
         <button class="btn" style="width:100%; margin: 10px 0; padding: 12px;" onclick="createNewFile()">Blank Document</button>
         <button class="btn secondary" style="width:100%; margin-bottom: 10px; padding: 12px;" onclick="triggerImport()">Import .md File</button>
-        <p id="import-error" style="color:red; font-size:0.75rem; margin-bottom:10px; display:none; font-weight:bold;">Only .md files allowed!</p>
+        <p id="import-error" style="color:red; font-size:0.75rem; margin-bottom:10px; display:none; font-weight:bold;">Please only import .md files</p>
         <button class="btn" style="background:none; color:#999;" onclick="hideCreateModal()">Cancel</button>
     </div>
 </div>
@@ -784,6 +813,36 @@
             <button class="btn danger" style="flex:1" onclick="confirmDeleteTargets()">Delete</button>
         </div>
     </div>
+</div>
+
+<div id="link-modal" class="modal-overlay">
+    <div class="modal">
+        <h3>Insert Link</h3>
+        <input type="text" id="link-url" placeholder="https://example.com" style="width:100%; background: var(--light-cream); border:2px solid var(--primary-green); padding:10px; border-radius:10px; font-weight:700; outline:none; margin: 12px 0 8px;">
+        <input type="text" id="link-text" placeholder="Link text" style="width:100%; background: var(--light-cream); border:2px solid var(--primary-green); padding:10px; border-radius:10px; font-weight:700; outline:none;">
+        <div style="display:flex; gap:10px; margin-top:6px;">
+            <button class="btn secondary" style="flex:1" onclick="hideLinkModal()">Cancel</button>
+            <button class="btn" style="flex:1" onclick="confirmLinkInsert()">Insert</button>
+        </div>
+    </div>
+</div>
+
+<div id="edit-link-modal" class="modal-overlay">
+    <div class="modal">
+        <h3>Edit Link</h3>
+        <input type="text" id="edit-link-url" placeholder="https://example.com" style="width:100%; background: var(--light-cream); border:2px solid var(--primary-green); padding:10px; border-radius:10px; font-weight:700; outline:none; margin: 12px 0 8px;">
+        <input type="text" id="edit-link-text" placeholder="Link text" style="width:100%; background: var(--light-cream); border:2px solid var(--primary-green); padding:10px; border-radius:10px; font-weight:700; outline:none;">
+        <div style="display:flex; gap:10px; margin-top:6px;">
+            <button class="btn danger" style="flex:1" onclick="removeActiveLink()">Remove</button>
+            <button class="btn secondary" style="flex:1" onclick="hideEditLinkModal()">Cancel</button>
+            <button class="btn" style="flex:1" onclick="confirmEditLink()">Save</button>
+        </div>
+    </div>
+</div>
+
+<div id="link-popover" class="editor-interactive" contenteditable="false">
+    <button class="btn" style="padding:6px 10px;" onclick="visitActiveLink()">Visit</button>
+    <button class="btn secondary" style="padding:6px 10px;" onclick="editActiveLink()">Edit</button>
 </div>
 
 <input type="file" id="file-import" style="display:none" accept=".md">
@@ -802,6 +861,10 @@
     let deleteTargets = [];
     let reduceMotion = localStorage.getItem('reduce_motion') === '1';
     let holdInterval = null;
+    let pendingLinkRange = null;
+    let activeLinkEl = null;
+    let editingLinkEl = null;
+    let linkPopoverTimer = null;
 
     const themes = [
         { name: 'Emerald', class: '', color: '#00a859' },
@@ -1279,25 +1342,82 @@
         }
     }
 
-    function insertLink() {
+    function showLinkModal() {
         const editor = document.getElementById('rich-editor-input');
-        if (!editor) return;
-        const url = prompt('Enter URL');
-        if (!url) return;
+        const modal = document.getElementById('link-modal');
+        const input = document.getElementById('link-url');
+        const textInput = document.getElementById('link-text');
+        if (!editor || !modal || !input) return;
         const selection = window.getSelection();
         if (!selection || selection.rangeCount === 0) return;
         const range = selection.getRangeAt(0);
         if (!editor.contains(range.commonAncestorContainer)) return;
-        if (range.collapsed) {
-            document.execCommand('insertHTML', false, `<a href="${url}">${url}</a>`);
-        } else {
-            document.execCommand('createLink', false, url);
+        pendingLinkRange = range.cloneRange();
+        modal.classList.add('active');
+        input.value = '';
+        if (textInput) {
+            const selectedText = selection.toString().trim();
+            textInput.value = selectedText;
         }
+        input.focus();
+    }
+
+    function hideLinkModal() {
+        const modal = document.getElementById('link-modal');
+        if (!modal) return;
+        modal.classList.remove('active');
+        pendingLinkRange = null;
+    }
+
+    function hideEditLinkModal() {
+        const modal = document.getElementById('edit-link-modal');
+        if (!modal) return;
+        modal.classList.remove('active');
+        editingLinkEl = null;
+    }
+
+    function normalizeUrl(url) {
+        if (!url) return '';
+        const trimmed = url.trim();
+        if (!trimmed) return '';
+        if (/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)) return trimmed;
+        return `https://${trimmed}`;
+    }
+
+    function confirmLinkInsert() {
+        const editor = document.getElementById('rich-editor-input');
+        const input = document.getElementById('link-url');
+        const textInput = document.getElementById('link-text');
+        if (!editor || !input) return;
+        const url = normalizeUrl(input.value || '');
+        const linkText = (textInput?.value || '').trim() || url;
+        if (!url) return;
+        if (!pendingLinkRange) return;
+        const selection = window.getSelection();
+        if (!selection) return;
+        selection.removeAllRanges();
+        selection.addRange(pendingLinkRange);
+        const range = pendingLinkRange;
+        range.deleteContents();
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.textContent = linkText;
+        anchor.rel = 'noopener';
+        anchor.target = '_blank';
+        range.insertNode(anchor);
+        const newRange = document.createRange();
+        newRange.setStartAfter(anchor);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+        hideLinkModal();
+        updateMarkdownFromEditor();
+        autoSave();
     }
 
     function applyBlock(block) {
         if (!block) return;
-        const value = ['h1', 'h2', 'h3', 'blockquote', 'p'].includes(block) ? `<${block}>` : block;
+        const value = ['h1', 'h2', 'h3', 'p'].includes(block) ? `<${block}>` : block;
         document.execCommand('formatBlock', false, value);
     }
 
@@ -1325,18 +1445,125 @@
                 autoSave();
                 return;
             }
-            if (action === 'code') {
-                wrapSelectionWithTag('code');
-                updateMarkdownFromEditor();
-                autoSave();
-                return;
-            }
             if (action === 'link') {
-                insertLink();
-                updateMarkdownFromEditor();
-                autoSave();
+                showLinkModal();
             }
         });
+    }
+
+    function initEditorLinkBehavior() {
+        const editor = document.getElementById('rich-editor-input');
+        const popover = document.getElementById('link-popover');
+        if (!editor) return;
+        editor.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                window.open(link.href, '_blank', 'noopener');
+            }
+        });
+        editor.addEventListener('click', (e) => {
+            if (!e.target.closest('a')) hideLinkPopover();
+        });
+
+        editor.addEventListener('mouseover', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+            if (linkPopoverTimer) clearTimeout(linkPopoverTimer);
+            linkPopoverTimer = setTimeout(() => {
+                activeLinkEl = link;
+                showLinkPopover(link);
+            }, 500);
+        });
+
+        editor.addEventListener('mouseout', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+            if (linkPopoverTimer) {
+                clearTimeout(linkPopoverTimer);
+                linkPopoverTimer = null;
+            }
+            if (!popover) return;
+            if (popover.matches(':hover')) return;
+            hideLinkPopover();
+        });
+
+        if (popover) {
+            popover.addEventListener('mouseleave', () => {
+                hideLinkPopover();
+            });
+            popover.addEventListener('mouseenter', () => {
+                if (linkPopoverTimer) {
+                    clearTimeout(linkPopoverTimer);
+                    linkPopoverTimer = null;
+                }
+            });
+        }
+    }
+
+    function showLinkPopover(link) {
+        const popover = document.getElementById('link-popover');
+        if (!popover || !link) return;
+        const rect = link.getBoundingClientRect();
+        popover.classList.add('active');
+        const popRect = popover.getBoundingClientRect();
+        const top = rect.top - popRect.height + 4;
+        const left = rect.left + rect.width / 2 - popRect.width / 2;
+        popover.style.top = `${Math.max(8, top)}px`;
+        popover.style.left = `${Math.max(8, left)}px`;
+    }
+
+    function hideLinkPopover(keepActive = false) {
+        const popover = document.getElementById('link-popover');
+        if (!popover) return;
+        popover.classList.remove('active');
+        if (!keepActive) activeLinkEl = null;
+    }
+
+    function visitActiveLink() {
+        if (!activeLinkEl) return;
+        window.open(activeLinkEl.href, '_blank', 'noopener');
+        hideLinkPopover(true);
+    }
+
+    function editActiveLink() {
+        if (!activeLinkEl) return;
+        const modal = document.getElementById('edit-link-modal');
+        const urlInput = document.getElementById('edit-link-url');
+        const textInput = document.getElementById('edit-link-text');
+        if (!modal || !urlInput || !textInput) return;
+        editingLinkEl = activeLinkEl;
+        urlInput.value = editingLinkEl.getAttribute('href') || '';
+        textInput.value = editingLinkEl.textContent || '';
+        modal.classList.add('active');
+        textInput.focus();
+        hideLinkPopover(true);
+    }
+
+    function confirmEditLink() {
+        if (!editingLinkEl) return;
+        const urlInput = document.getElementById('edit-link-url');
+        const textInput = document.getElementById('edit-link-text');
+        if (!urlInput || !textInput) return;
+        const url = normalizeUrl(urlInput.value || '');
+        const linkText = (textInput.value || '').trim() || url;
+        if (!url) return;
+        editingLinkEl.href = url;
+        editingLinkEl.textContent = linkText;
+        hideEditLinkModal();
+        updateMarkdownFromEditor();
+        autoSave();
+    }
+
+    function removeActiveLink() {
+        if (!editingLinkEl) return;
+        const text = editingLinkEl.textContent || '';
+        const textNode = document.createTextNode(text);
+        editingLinkEl.replaceWith(textNode);
+        hideEditLinkModal();
+        updateMarkdownFromEditor();
+        autoSave();
     }
 
     function applyThemeClass(t) {
@@ -1553,6 +1780,7 @@
     updateCounts();
     applyReduceMotion();
     initFormattingToolbar();
+    initEditorLinkBehavior();
 </script>
 </body>
 </html>
