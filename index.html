@@ -18,6 +18,10 @@
             --shadow-soft: 0 10px 20px rgba(0,0,0,0.08);
         }
 
+        /*
+        FeatherPad - A lightweight, doc-style editor powered by Markdown. Made by Infekted11.
+        */
+
         /* Theme Definitions */
         body.theme-blue { --primary-green: #0072bc; --dark-green: #004a80; }
         body.theme-red { --primary-green: #bc2a00; --dark-green: #801d00; }
@@ -501,6 +505,14 @@
             display: flex;
             min-height: 0;
             height: 0;
+            gap: 12px;
+        }
+
+        .editor-main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            position: relative;
         }
 
         .editor-surface {
@@ -555,6 +567,340 @@
         }
         #rich-editor-input a:hover {
             background: #d8d8d8;
+        }
+
+        .editor-sidebar {
+            width: 280px;
+            min-width: 240px;
+            background: #fffdf6;
+            border: 2px solid var(--primary-green);
+            border-radius: 12px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .editor-sidebar.collapsed {
+            width: 44px !important;
+            min-width: 44px !important;
+            max-width: 44px !important;
+            border-radius: 999px;
+            align-items: center;
+        }
+
+        .checker-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 10px;
+            background: var(--light-cream);
+            border-bottom: 2px solid rgba(0,0,0,0.08);
+            font-weight: 900;
+            color: #444;
+        }
+
+        .checker-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .checker-sub {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #666;
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .checker-body {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+        }
+
+        .checker-card {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .checker-card h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #555;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .checker-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .checker-card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .checker-card.collapsed .checker-card-body {
+            display: none;
+        }
+
+        .checker-collapse-btn {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 2px 4px;
+            font-weight: 900;
+            color: #666;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .checker-collapse-btn .material-icons {
+            font-size: 16px;
+            transition: transform 0.2s ease;
+        }
+
+        .checker-card.collapsed .checker-collapse-btn .material-icons {
+            transform: rotate(-90deg);
+        }
+
+        .checker-setting {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 0;
+            font-weight: 800;
+            font-size: 0.8rem;
+            color: #333;
+        }
+
+        .checker-setting input[type="checkbox"] {
+            transform: scale(1.1);
+            accent-color: var(--primary-green);
+        }
+
+        .checker-setting input[type="number"] {
+            width: 70px;
+            padding: 4px 6px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.2);
+            font-weight: 800;
+        }
+
+        .checker-dictionary {
+            display: flex;
+            gap: 6px;
+        }
+
+        .checker-dictionary input {
+            flex: 1;
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.2);
+            font-weight: 700;
+            outline: none;
+        }
+
+        .checker-words {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .checker-word {
+            background: var(--light-cream);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 999px;
+            padding: 4px 8px;
+            font-size: 0.72rem;
+            font-weight: 900;
+            color: #444;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .checker-word button {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 900;
+            color: #777;
+        }
+
+        .checker-empty {
+            padding: 16px;
+            border-radius: 10px;
+            border: 2px dashed rgba(0,0,0,0.15);
+            background: #fff;
+            color: #777;
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .checker-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .checker-item {
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 10px;
+            background: #fff;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .checker-type {
+            font-size: 0.7rem;
+            font-weight: 900;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            color: var(--primary-green);
+        }
+
+        .checker-text {
+            font-weight: 800;
+            color: #222;
+            font-size: 0.85rem;
+        }
+
+        .checker-suggestion {
+            font-size: 0.78rem;
+            color: #666;
+            font-weight: 700;
+        }
+
+        .checker-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .checker-actions .btn {
+            padding: 6px 8px;
+            font-size: 0.7rem;
+        }
+
+        .editor-sidebar.collapsed .checker-body,
+        .editor-sidebar.collapsed .checker-sub,
+        .editor-sidebar.collapsed .checker-title-text {
+            display: none;
+        }
+
+        .checker-pill-count {
+            display: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            background: var(--primary-green);
+            color: #fff;
+            font-weight: 900;
+            font-size: 0.7rem;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .editor-sidebar.collapsed .checker-pill-count {
+            display: inline-flex;
+        }
+
+        .editor-sidebar.collapsed .checker-header {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 6px;
+            border-bottom: none;
+            background: transparent;
+        }
+
+        .editor-sidebar.collapsed .checker-title {
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .editor-sidebar.collapsed .checker-toggle {
+            margin-top: 4px;
+        }
+
+        .checker-toggle {
+            padding: 6px;
+            min-width: auto;
+        }
+
+        .checker-toggle .material-icons {
+            transition: transform 0.25s ease;
+        }
+
+        .editor-sidebar.collapsed .checker-toggle .material-icons {
+            transform: rotate(180deg);
+        }
+
+        .checker-resize-handle {
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 10px;
+            height: 100%;
+            cursor: ew-resize;
+            background: transparent;
+        }
+
+        .editor-sidebar.collapsed .checker-resize-handle {
+            display: none;
+        }
+
+        #issue-highlight {
+            position: absolute;
+            border-radius: 6px;
+            background: rgba(255, 215, 0, 0.35);
+            outline: 2px solid rgba(255, 180, 0, 0.9);
+            box-shadow: 0 0 0 6px rgba(255, 215, 0, 0.15);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+
+        #issue-highlight.active {
+            opacity: 1;
+            animation: issueFlash 0.9s ease;
+        }
+
+        @keyframes issueFlash {
+            0% { opacity: 0; transform: scale(0.98); }
+            30% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1); }
         }
         #link-popover {
             position: fixed;
@@ -783,7 +1129,80 @@
             <button class="btn" style="background:#555" onclick="downloadFile()">Export</button>
         </div>
         <div class="editor-shell">
-            <div id="rich-editor-input" class="editor-surface" style="flex:1" contenteditable="true" data-placeholder="Start writing..." oninput="handleLiveInput()"></div>
+            <div class="editor-main">
+                <div id="rich-editor-input" class="editor-surface" style="flex:1" contenteditable="true" spellcheck="true" data-placeholder="Start writing..." oninput="handleLiveInput()"></div>
+                <div id="issue-highlight"></div>
+            </div>
+            <aside id="checker-panel" class="editor-sidebar">
+                <div class="checker-resize-handle" id="checker-resize-handle" title="Drag to resize"></div>
+                <div class="checker-header">
+                    <div>
+                        <div class="checker-title">
+                            <span class="material-icons">spellcheck</span>
+                            <span class="checker-title-text">Spelling &amp; Grammar</span>
+                        </div>
+                        <div class="checker-sub">Issues: <span id="checker-count">0</span></div>
+                    </div>
+                    <span id="checker-pill-count" class="checker-pill-count">0</span>
+                    <button id="checker-toggle" class="tool-btn checker-toggle" onclick="toggleChecker()" title="Collapse checker">
+                        <span class="material-icons">chevron_right</span>
+                    </button>
+                </div>
+                <div class="checker-body">
+                    <div class="checker-card" id="style-settings-card">
+                        <div class="checker-card-header">
+                            <h4>Style Preferences</h4>
+                            <button class="checker-collapse-btn" onclick="toggleStyleSettings()" title="Collapse">
+                                <span class="material-icons">expand_more</span>
+                                <span>Collapse</span>
+                            </button>
+                        </div>
+                        <div class="checker-card-body" id="style-settings-body">
+                            <label class="checker-setting">
+                                <span>Common typos</span>
+                                <input type="checkbox" id="setting-typos">
+                            </label>
+                            <label class="checker-setting">
+                                <span>Repeated words</span>
+                                <input type="checkbox" id="setting-repeat">
+                            </label>
+                            <label class="checker-setting">
+                                <span>Double spaces</span>
+                                <input type="checkbox" id="setting-spaces">
+                            </label>
+                            <label class="checker-setting">
+                                <span>Sentence case</span>
+                                <input type="checkbox" id="setting-case">
+                            </label>
+                            <label class="checker-setting">
+                                <span>End punctuation</span>
+                                <input type="checkbox" id="setting-punct">
+                            </label>
+                            <label class="checker-setting">
+                                <span>Long sentence warn</span>
+                                <input type="checkbox" id="setting-long">
+                            </label>
+                            <label class="checker-setting">
+                                <span>Long sentence limit</span>
+                                <input type="number" id="setting-long-limit" min="12" max="60" step="1">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="checker-card">
+                        <h4>Custom Dictionary</h4>
+                        <div class="checker-dictionary">
+                            <input type="text" id="custom-word-input" placeholder="Add word">
+                            <button class="btn secondary" onclick="addCustomWord()">Add</button>
+                        </div>
+                        <div id="custom-word-list" class="checker-words"></div>
+                        <div class="checker-suggestion" style="margin-top:8px;">
+                            Misspellings are handled by your browser’s built-in spellcheck.
+                        </div>
+                    </div>
+                    <div id="checker-empty" class="checker-empty">No issues found yet.</div>
+                    <div id="checker-list" class="checker-list"></div>
+                </div>
+            </aside>
         </div>
     </div>
 
@@ -865,6 +1284,13 @@
     let activeLinkEl = null;
     let editingLinkEl = null;
     let linkPopoverTimer = null;
+    let checkerCollapsed = localStorage.getItem('md_editor_checker_collapsed') === '1';
+    let lastCheckerIssues = [];
+    let checkerTimeout = null;
+    let checkerWidth = parseInt(localStorage.getItem('md_editor_checker_width') || '280', 10);
+    let customWords = JSON.parse(localStorage.getItem('md_editor_custom_words') || '[]');
+    let checkerSettings = JSON.parse(localStorage.getItem('md_editor_checker_settings') || '{}');
+    let styleSettingsCollapsed = localStorage.getItem('md_editor_style_settings_collapsed') === '1';
 
     const themes = [
         { name: 'Emerald', class: '', color: '#00a859' },
@@ -1139,6 +1565,7 @@
         const html = renderMarkdown(md || '');
         editor.innerHTML = html || '';
         updateCounts();
+        runChecker();
     }
 
     function htmlToMarkdown(html) {
@@ -1170,6 +1597,532 @@
         document.getElementById('word-count').innerText = `${words} ${words === 1 ? 'word' : 'words'}`;
         document.getElementById('sentence-count').innerText = `${sentences} ${sentences === 1 ? 'sentence' : 'sentences'}`;
         document.getElementById('char-count').innerText = `${chars} ${chars === 1 ? 'character' : 'characters'}`;
+    }
+
+    const commonTypos = {
+        teh: 'the',
+        dont: "don't",
+        doesnt: "doesn't",
+        cant: "can't",
+        wont: "won't",
+        didnt: "didn't",
+        im: "I'm",
+        ive: "I've",
+        ill: "I'll",
+        id: "I'd",
+        isnt: "isn't",
+        arent: "aren't",
+        wasnt: "wasn't",
+        werent: "weren't",
+        couldve: "could've",
+        shouldve: "should've",
+        wouldve: "would've",
+        alot: "a lot",
+        definately: "definitely",
+        recieve: "receive",
+        seperate: "separate",
+        occured: "occurred",
+        untill: "until",
+        tomorow: "tomorrow",
+        becuase: "because",
+        thier: "their",
+        wierd: "weird",
+        adress: "address",
+        goverment: "government",
+        enviroment: "environment",
+        arguemant: "argument",
+        acheive: "achieve",
+        ocassion: "occasion",
+        occassion: "occasion",
+        wich: "which"
+    };
+
+    const defaultCheckerSettings = {
+        typos: true,
+        repeat: true,
+        spaces: true,
+        case: true,
+        punct: true,
+        long: true,
+        longLimit: 30
+    };
+
+    function normalizeCheckerSettings() {
+        checkerSettings = {
+            ...defaultCheckerSettings,
+            ...(checkerSettings || {})
+        };
+        if (!Number.isFinite(checkerSettings.longLimit)) {
+            checkerSettings.longLimit = defaultCheckerSettings.longLimit;
+        }
+        checkerSettings.longLimit = Math.max(12, Math.min(60, checkerSettings.longLimit));
+        localStorage.setItem('md_editor_checker_settings', JSON.stringify(checkerSettings));
+    }
+
+    function applyCase(source, suggestion) {
+        if (!source) return suggestion;
+        if (source.toUpperCase() === source) return suggestion.toUpperCase();
+        if (source[0] && source[0].toUpperCase() === source[0]) {
+            return suggestion[0].toUpperCase() + suggestion.slice(1);
+        }
+        return suggestion;
+    }
+
+    function buildCheckerIssues(text) {
+        const issues = [];
+        const limit = 60;
+        if (!text || !text.trim()) return issues;
+        let issueId = 0;
+        const customSet = new Set((customWords || []).map(w => w.toLowerCase()));
+
+        if (checkerSettings.typos) {
+            Object.entries(commonTypos).forEach(([wrong, right]) => {
+                if (customSet.has(wrong)) return;
+                if (issues.length >= limit) return;
+                const re = new RegExp(`\\b${wrong}\\b`, 'gi');
+                let match;
+                while ((match = re.exec(text)) && issues.length < limit) {
+                    const found = match[0];
+                    if (customSet.has(found.toLowerCase())) {
+                        if (re.lastIndex === match.index) re.lastIndex++;
+                        continue;
+                    }
+                    const replace = applyCase(found, right);
+                    issues.push({
+                        id: `typo-${issueId++}`,
+                        type: 'Spelling',
+                        message: `Possible misspelling: "${found}"`,
+                        suggestion: `Suggestion: ${replace}`,
+                        find: found,
+                        replace,
+                        start: match.index,
+                        length: found.length
+                    });
+                    if (re.lastIndex === match.index) re.lastIndex++;
+                }
+            });
+        }
+
+
+        if (checkerSettings.repeat) {
+            const repeatRe = /\b([A-Za-z]{2,})\s+\1\b/gi;
+            let repeatMatch;
+            while ((repeatMatch = repeatRe.exec(text)) && issues.length < limit) {
+                const word = repeatMatch[1];
+                if (customSet.has(word.toLowerCase())) {
+                    if (repeatRe.lastIndex === repeatMatch.index) repeatRe.lastIndex++;
+                    continue;
+                }
+                issues.push({
+                    id: `repeat-${issueId++}`,
+                    type: 'Grammar',
+                    message: `Repeated word: "${word}"`,
+                    suggestion: 'Suggestion: remove the duplicate word.',
+                    find: repeatMatch[0],
+                    replace: word,
+                    start: repeatMatch.index,
+                    length: repeatMatch[0].length
+                });
+                if (repeatRe.lastIndex === repeatMatch.index) repeatRe.lastIndex++;
+            }
+        }
+
+        if (checkerSettings.spaces) {
+            const doubleSpaceRe = / {2,}/g;
+            let spaceMatch;
+            while ((spaceMatch = doubleSpaceRe.exec(text)) && issues.length < limit) {
+                issues.push({
+                    id: `space-${issueId++}`,
+                    type: 'Grammar',
+                    message: 'Extra spaces detected.',
+                    suggestion: 'Suggestion: replace multiple spaces with a single space.',
+                    find: spaceMatch[0],
+                    replace: ' ',
+                    start: spaceMatch.index,
+                    length: spaceMatch[0].length
+                });
+                if (doubleSpaceRe.lastIndex === spaceMatch.index) doubleSpaceRe.lastIndex++;
+            }
+        }
+
+        if (checkerSettings.case) {
+            const lowerStartRe = /(^|[.!?]\s+)([a-z])/g;
+            let lowerMatch;
+            while ((lowerMatch = lowerStartRe.exec(text)) && issues.length < limit) {
+                const letter = lowerMatch[2];
+                const position = lowerMatch.index + lowerMatch[1].length;
+                issues.push({
+                    id: `lower-${issueId++}`,
+                    type: 'Grammar',
+                    message: `Sentence starts with lowercase "${letter}".`,
+                    suggestion: `Suggestion: capitalize "${letter.toUpperCase()}".`,
+                    find: letter,
+                    replace: letter.toUpperCase(),
+                    start: position,
+                    length: 1
+                });
+                if (lowerStartRe.lastIndex === lowerMatch.index) lowerStartRe.lastIndex++;
+            }
+        }
+
+        if (checkerSettings.long) {
+            const sentenceRe = /[^.!?]+[.!?]?/g;
+            let sentenceMatch;
+            while ((sentenceMatch = sentenceRe.exec(text)) && issues.length < limit) {
+                const sentence = sentenceMatch[0].trim();
+                if (!sentence) continue;
+                const wordCount = sentence.split(/\s+/).filter(Boolean).length;
+                if (wordCount > checkerSettings.longLimit) {
+                    issues.push({
+                        id: `long-${issueId++}`,
+                        type: 'Style',
+                        message: `Long sentence detected (${wordCount} words).`,
+                        suggestion: 'Suggestion: consider splitting this sentence.',
+                        start: sentenceMatch.index,
+                        length: sentenceMatch[0].length
+                    });
+                }
+            }
+        }
+
+        if (checkerSettings.punct) {
+            const trimmed = text.trim();
+            if (trimmed && !/[.!?]["')\]]?$/.test(trimmed) && issues.length < limit) {
+                issues.push({
+                    id: `punct-${issueId++}`,
+                    type: 'Grammar',
+                    message: 'Paragraph ends without punctuation.',
+                    suggestion: 'Suggestion: add a period or closing punctuation.',
+                    start: Math.max(0, text.length - 1),
+                    length: 1
+                });
+            }
+        }
+
+        return issues;
+    }
+
+    function renderChecker(issues) {
+        const countEl = document.getElementById('checker-count');
+        const pillEl = document.getElementById('checker-pill-count');
+        const emptyEl = document.getElementById('checker-empty');
+        const listEl = document.getElementById('checker-list');
+        if (!countEl || !emptyEl || !listEl) return;
+        countEl.textContent = issues.length;
+        if (pillEl) pillEl.textContent = issues.length > 99 ? '99+' : `${issues.length}`;
+        listEl.innerHTML = '';
+        if (issues.length === 0) {
+            emptyEl.style.display = 'block';
+            return;
+        }
+        emptyEl.style.display = 'none';
+        issues.forEach(issue => {
+            const item = document.createElement('div');
+            item.className = 'checker-item';
+            item.onclick = () => focusCheckerIssue(issue.id);
+
+            const type = document.createElement('div');
+            type.className = 'checker-type';
+            type.textContent = issue.type;
+
+            const text = document.createElement('div');
+            text.className = 'checker-text';
+            text.textContent = issue.message;
+
+            const suggestion = document.createElement('div');
+            suggestion.className = 'checker-suggestion';
+            suggestion.textContent = issue.suggestion || 'Suggestion: review this item.';
+
+            item.appendChild(type);
+            item.appendChild(text);
+            item.appendChild(suggestion);
+
+            if (issue.find && issue.replace !== undefined) {
+                const actions = document.createElement('div');
+                actions.className = 'checker-actions';
+                const fixBtn = document.createElement('button');
+                fixBtn.className = 'btn secondary';
+                fixBtn.textContent = 'Apply Fix';
+                fixBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    applyCheckerFix(issue.id);
+                };
+                actions.appendChild(fixBtn);
+                item.appendChild(actions);
+            }
+
+
+            listEl.appendChild(item);
+        });
+    }
+
+    function replaceInEditorText(root, findText, replaceText, startIndex) {
+        if (!root || !findText) return false;
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+        let node;
+        let offset = 0;
+        const targetIndex = Math.max(0, startIndex || 0);
+
+        while ((node = walker.nextNode())) {
+            const value = node.nodeValue || '';
+            let searchIndex = 0;
+            while (true) {
+                const idx = value.indexOf(findText, searchIndex);
+                if (idx === -1) break;
+                const globalIdx = offset + idx;
+                if (globalIdx >= targetIndex) {
+                    node.nodeValue = value.slice(0, idx) + replaceText + value.slice(idx + findText.length);
+                    return true;
+                }
+                searchIndex = idx + findText.length;
+            }
+            offset += value.length;
+        }
+        return false;
+    }
+
+    function findRangeByOffset(root, start, length) {
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+        let node;
+        let offset = 0;
+        const safeStart = Math.max(0, start || 0);
+        const safeLength = Math.max(1, length || 1);
+        while ((node = walker.nextNode())) {
+            const value = node.nodeValue || '';
+            const nodeStart = offset;
+            const nodeEnd = offset + value.length;
+            if (safeStart >= nodeStart && safeStart <= nodeEnd) {
+                const range = document.createRange();
+                const localStart = Math.min(value.length, Math.max(0, safeStart - nodeStart));
+                const localEnd = Math.min(value.length, localStart + safeLength);
+                range.setStart(node, localStart);
+                range.setEnd(node, localEnd);
+                return range;
+            }
+            offset += value.length;
+        }
+        return null;
+    }
+
+    function applyCheckerFix(issueId) {
+        const issue = lastCheckerIssues.find(i => i.id === issueId);
+        if (!issue || !issue.find || issue.replace === undefined) return;
+        const editor = document.getElementById('rich-editor-input');
+        if (!editor) return;
+        const replaced = replaceInEditorText(editor, issue.find, issue.replace, issue.start);
+        if (replaced) {
+            updateMarkdownFromEditor();
+            autoSave();
+            runChecker();
+        }
+    }
+
+    function focusCheckerIssue(issueId) {
+        const issue = lastCheckerIssues.find(i => i.id === issueId);
+        const editor = document.getElementById('rich-editor-input');
+        const highlight = document.getElementById('issue-highlight');
+        const editorMain = document.querySelector('.editor-main');
+        if (!issue || !editor) return;
+        const start = issue.start ?? 0;
+        const length = issue.length || (issue.find ? issue.find.length : 1);
+        const range = findRangeByOffset(editor, start, length);
+        if (!range) return;
+        const selection = window.getSelection();
+        if (selection) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        editor.focus();
+        const rect = range.getBoundingClientRect();
+        if (rect && rect.height) {
+            editor.scrollBy({
+                top: rect.top - editor.getBoundingClientRect().top - 60,
+                behavior: 'smooth'
+            });
+        }
+        if (highlight && editorMain && rect && rect.width) {
+            const mainRect = editorMain.getBoundingClientRect();
+            const left = rect.left - mainRect.left;
+            const top = rect.top - mainRect.top;
+            highlight.style.left = `${Math.max(6, left)}px`;
+            highlight.style.top = `${Math.max(6, top)}px`;
+            highlight.style.width = `${Math.max(12, rect.width)}px`;
+            highlight.style.height = `${Math.max(18, rect.height)}px`;
+            highlight.classList.remove('active');
+            void highlight.offsetWidth;
+            highlight.classList.add('active');
+            setTimeout(() => highlight.classList.remove('active'), 950);
+        }
+    }
+
+    function runChecker() {
+        const editor = document.getElementById('rich-editor-input');
+        if (!editor) return;
+        normalizeCheckerSettings();
+        const text = editor.textContent || '';
+        lastCheckerIssues = buildCheckerIssues(text);
+        renderChecker(lastCheckerIssues);
+    }
+
+    function scheduleChecker() {
+        clearTimeout(checkerTimeout);
+        checkerTimeout = setTimeout(runChecker, 250);
+    }
+
+    function toggleChecker() {
+        const panel = document.getElementById('checker-panel');
+        if (!panel) return;
+        checkerCollapsed = !checkerCollapsed;
+        panel.classList.toggle('collapsed', checkerCollapsed);
+        localStorage.setItem('md_editor_checker_collapsed', checkerCollapsed ? '1' : '0');
+        if (checkerCollapsed) {
+            panel.style.width = '';
+            panel.style.minWidth = '';
+            panel.style.maxWidth = '';
+        } else {
+            applyCheckerWidth();
+        }
+    }
+
+    function applyCheckerWidth() {
+        const panel = document.getElementById('checker-panel');
+        if (!panel || checkerCollapsed) return;
+        const width = Math.max(220, Math.min(420, checkerWidth));
+        panel.style.width = `${width}px`;
+        panel.style.minWidth = `${width}px`;
+        localStorage.setItem('md_editor_checker_width', `${width}`);
+    }
+
+    function initCheckerResize() {
+        const panel = document.getElementById('checker-panel');
+        const handle = document.getElementById('checker-resize-handle');
+        if (!panel || !handle) return;
+        let startX = 0;
+        let startWidth = 0;
+
+        const onMove = (e) => {
+            const delta = startX - e.clientX;
+            checkerWidth = startWidth + delta;
+            applyCheckerWidth();
+        };
+
+        const onUp = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+        };
+
+        handle.addEventListener('mousedown', (e) => {
+            if (checkerCollapsed) return;
+            startX = e.clientX;
+            startWidth = panel.getBoundingClientRect().width;
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        });
+
+        handle.addEventListener('dblclick', () => {
+            checkerWidth = 280;
+            applyCheckerWidth();
+        });
+    }
+
+    function renderCustomWords() {
+        const list = document.getElementById('custom-word-list');
+        if (!list) return;
+        list.innerHTML = '';
+        const words = [...new Set((customWords || []).map(w => w.trim()).filter(Boolean))].sort();
+        customWords = words;
+        localStorage.setItem('md_editor_custom_words', JSON.stringify(customWords));
+        words.forEach(word => {
+            const pill = document.createElement('div');
+            pill.className = 'checker-word';
+            pill.textContent = word;
+            const btn = document.createElement('button');
+            btn.textContent = '×';
+            btn.onclick = () => removeCustomWord(word);
+            pill.appendChild(btn);
+            list.appendChild(pill);
+        });
+    }
+
+    function addCustomWord(word) {
+        const input = document.getElementById('custom-word-input');
+        const value = (word || (input ? input.value : '') || '').trim();
+        if (!value) return;
+        customWords = [...(customWords || []), value.toLowerCase()];
+        if (input && !word) input.value = '';
+        renderCustomWords();
+        runChecker();
+    }
+
+    function removeCustomWord(word) {
+        customWords = (customWords || []).filter(w => w.toLowerCase() !== word.toLowerCase());
+        renderCustomWords();
+        runChecker();
+    }
+
+    function initCheckerSettingsUI() {
+        normalizeCheckerSettings();
+        const map = [
+            ['setting-typos', 'typos'],
+            ['setting-repeat', 'repeat'],
+            ['setting-spaces', 'spaces'],
+            ['setting-case', 'case'],
+            ['setting-punct', 'punct'],
+            ['setting-long', 'long']
+        ];
+        map.forEach(([id, key]) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.checked = !!checkerSettings[key];
+            el.onchange = () => {
+                checkerSettings[key] = el.checked;
+                localStorage.setItem('md_editor_checker_settings', JSON.stringify(checkerSettings));
+                runChecker();
+            };
+        });
+        const longInput = document.getElementById('setting-long-limit');
+        if (longInput) {
+            longInput.value = checkerSettings.longLimit;
+            longInput.onchange = () => {
+                checkerSettings.longLimit = parseInt(longInput.value || '30', 10);
+                normalizeCheckerSettings();
+                longInput.value = checkerSettings.longLimit;
+                runChecker();
+            };
+        }
+    }
+
+    function initCheckerPanel() {
+        const panel = document.getElementById('checker-panel');
+        if (!panel) return;
+        panel.classList.toggle('collapsed', checkerCollapsed);
+        applyCheckerWidth();
+        initCheckerResize();
+        initCheckerSettingsUI();
+        renderCustomWords();
+        applyStyleSettingsCollapsed();
+        const input = document.getElementById('custom-word-input');
+        if (input) {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCustomWord();
+                }
+            });
+        }
+        runChecker();
+    }
+
+    function toggleStyleSettings() {
+        styleSettingsCollapsed = !styleSettingsCollapsed;
+        localStorage.setItem('md_editor_style_settings_collapsed', styleSettingsCollapsed ? '1' : '0');
+        applyStyleSettingsCollapsed();
+    }
+
+    function applyStyleSettingsCollapsed() {
+        const card = document.getElementById('style-settings-card');
+        if (!card) return;
+        card.classList.toggle('collapsed', styleSettingsCollapsed);
     }
 
     function toggleFavoritesFilter() {
@@ -1313,6 +2266,7 @@
     function handleLiveInput() {
         updateMarkdownFromEditor();
         autoSave();
+        scheduleChecker();
     }
 
     function wrapSelectionWithTag(tagName) {
@@ -1781,6 +2735,7 @@
     applyReduceMotion();
     initFormattingToolbar();
     initEditorLinkBehavior();
+    initCheckerPanel();
 </script>
 </body>
 </html>
